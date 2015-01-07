@@ -8,7 +8,7 @@ wrapdocker > /dev/null 2>&1 &
 
 echo "=> Cloning repo"
 git clone $GIT_REPO /app
-cd /app
+cd /app$DOCKERFILE_PATH
 
 echo "=> Building"
 docker build --rm --force-rm -t $IMAGE_NAME .

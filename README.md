@@ -13,6 +13,7 @@ Run the following docker command:
 Where:
 
 * `$GIT_REPO` is the git repository to clone and build, i.e. `https://github.com/tutumcloud/docker-hello-world.git`
+* `$DOCKERFILE_PATH` is the relative path to the root of the repository where the `Dockerfile` is present, i.e. `/`
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
