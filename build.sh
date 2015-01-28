@@ -10,6 +10,11 @@ sleep 2
 echo "=> Checking docker daemon"
 docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
 
+if [ ! -z "$DOCKERCFG" ]; then
+	echo "=> Loading docker auth configuration from environment"
+	echo $DOCKERCFG > /.dockercfg
+fi
+
 if [ ! -d /app ]; then
 	echo "=> Cloning repo"
 	git clone $GIT_REPO /app

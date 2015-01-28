@@ -55,10 +55,18 @@ Example `fig-test.yml` file for a Django app that depends on a Redis cache:
 	    - REDIS_PASS=password
 
 
-# Caching images for faster builds
+# Notes
+
+## Caching images for faster builds
 
 If you want to cache the images used for building and testing, run the following:
 
 	docker run --name builder_cache tutum/docker-builder true
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
+
+## Adding credentials to pull private images
+
+If your tests depend on private images, you can pass their credentials either by mounting your local `.dockercfg` file inside the container appending `-v $HOME/.dockercfg:/.dockercfg:r`, or by providing the contents of this file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.dockercfg)`
+
+	
