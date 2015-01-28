@@ -1,4 +1,4 @@
-tutum/docker-builder
+tutum/builder
 ====================
 
 A docker image that builds, tests and pushes docker images from code repositories.
@@ -10,7 +10,7 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r -e IMAGE_NAME=$IMAGE_NAME tutum/docker-builder
+	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r -e IMAGE_NAME=$IMAGE_NAME tutum/builder
 
 Where:
 
@@ -21,7 +21,7 @@ Where:
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/docker-builder
+	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder
 
 Where:
 
@@ -57,7 +57,7 @@ Example `fig-test.yml` file for a Django app that depends on a Redis cache:
 
 If you want to cache the images used for building and testing, run the following:
 
-	docker run --name builder_cache tutum/docker-builder true
+	docker run --name builder_cache tutum/builder true
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
