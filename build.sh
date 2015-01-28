@@ -12,18 +12,21 @@ cd /app
 git checkout $GIT_TAG
 cd .$DOCKERFILE_PATH
 
+echo "=> Checking docker daemon"
+docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+
 echo "=> Testing repo"
 if [ -f "./fig-test.yml" ]; then
 	fig -f fig-test.yml -p app up sut
 	RET=$(docker wait app_sut_1)
 	if [ "$RET" != "0" ]; then
-		echo "   Tests FAILED: $RET"
+		echo "=> Tests FAILED: $RET"
 		exit 1
 	else
-		echo "   Tests PASSED"
+		echo "=> Tests PASSED"
 	fi
 else
-	echo "   No tests found (have you created a fig-test.yml file?). Skipping..."
+	echo "   No tests found (have you created a fig-test.yml file?)"
 fi
 
 echo "=> Building"
