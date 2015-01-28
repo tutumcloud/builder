@@ -1,7 +1,7 @@
-docker-builder
-==============
+tutum/builder
+=============
 
-An image that builds a git repository and pushes the resulting image to any public or private registry, all within a container.
+An image that tests and builds a code repository and pushes the resulting image to any public or private registry, all within a container.
 
 
 # Usage
@@ -53,3 +53,12 @@ Example `fig-test.yml` file for a Django app that depends on a Redis cache:
 	  image: tutum/redis
 	  environment:
 	    - REDIS_PASS=password
+
+
+# Caching images for faster builds
+
+If you want to cache the images used for building and testing, run the following:
+
+	docker run --name builder_cache tutum/docker-builder true
+
+And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
