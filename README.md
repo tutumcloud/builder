@@ -1,5 +1,5 @@
-tutum/builder
-=============
+tutum/docker-builder
+====================
 
 A docker image that builds, tests and pushes docker images from code repositories.
 
