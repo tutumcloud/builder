@@ -8,7 +8,23 @@ wrapdocker > /dev/null 2>&1 &
 
 echo "=> Cloning repo"
 git clone $GIT_REPO /app
-cd /app$DOCKERFILE_PATH
+cd /app
+git checkout $GIT_TAG
+cd .$DOCKERFILE_PATH
+
+echo "=> Testing repo"
+if [ -f "./fig-test.yml" ]; then
+	fig -f fig-test.yml -p app up sut
+	RET=$(docker wait app_sut_1)
+	if [ "$RET" != "0" ]; then
+		echo "   Tests FAILED: $RET"
+		exit 1
+	else
+		echo "   Tests PASSED"
+	fi
+else
+	echo "   No tests found (have you created a fig-test.yml file?). Skipping..."
+fi
 
 echo "=> Building"
 docker build --rm --force-rm -t $IMAGE_NAME .
