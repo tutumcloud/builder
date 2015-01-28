@@ -1,7 +1,7 @@
 tutum/builder
 =============
 
-An image that tests and builds a code repository and pushes the resulting image to any public or private registry, all within a container.
+A docker image that builds, tests and pushes docker images from code repositories.
 
 
 # Usage
@@ -68,5 +68,4 @@ And then run your builds as above appending `--volumes-from builder_cache` to th
 ## Adding credentials to pull private images
 
 If your tests depend on private images, you can pass their credentials either by mounting your local `.dockercfg` file inside the container appending `-v $HOME/.dockercfg:/.dockercfg:r`, or by providing the contents of this file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.dockercfg)`
-
 	

@@ -20,10 +20,15 @@ if [ ! -d /app ]; then
 	git clone $GIT_REPO /app
 	cd /app
 	git checkout $GIT_TAG
-	cd .$DOCKERFILE_PATH
 else
 	echo "=> Using existing app in /app"
 	cd /app
+fi
+cd .$DOCKERFILE_PATH
+
+if [ ! -f Dockerfile ]; then
+	echo "=> No Dockerfile detected! Created one using tutum/buildstep"
+	echo "FROM tutum/buildstep" >> Dockerfile
 fi
 
 echo "=> Testing repo"
