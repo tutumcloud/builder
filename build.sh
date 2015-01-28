@@ -5,15 +5,21 @@ export DOCKER_HOST=tcp://127.0.0.1:2375
 
 echo "=> Starting docker"
 wrapdocker > /dev/null 2>&1 &
-
-echo "=> Cloning repo"
-git clone $GIT_REPO /app
-cd /app
-git checkout $GIT_TAG
-cd .$DOCKERFILE_PATH
+sleep 2
 
 echo "=> Checking docker daemon"
 docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+
+if [ ! -d /app ]; then
+	echo "=> Cloning repo"
+	git clone $GIT_REPO /app
+	cd /app
+	git checkout $GIT_TAG
+	cd .$DOCKERFILE_PATH
+else
+	echo "=> Using existing app in /app"
+	cd /app
+fi
 
 echo "=> Testing repo"
 if [ -f "./fig-test.yml" ]; then
