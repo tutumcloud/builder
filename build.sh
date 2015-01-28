@@ -10,24 +10,39 @@ sleep 2
 echo "=> Checking docker daemon"
 docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
 
-if [ ! -z "$DOCKERCFG" ]; then
-	echo "=> Loading docker auth configuration from environment"
+echo "=> Loading docker auth configuration"
+if [ -f /.dockercfg ]; then
+	echo "   Using existing configuration in /.dockercfg"
+elif [ ! -z "$DOCKERCFG" ]; then
+	echo "   Detected configuration in \$DOCKERCFG"
 	echo $DOCKERCFG > /.dockercfg
+elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
+	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
+	echo "   Logging into registry using $USERNAME"
+	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY
+else
+	echo "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG found - unable to load any credentials for pusing/pulling"
 fi
 
+echo "=> Detecting application"
 if [ ! -d /app ]; then
-	echo "=> Cloning repo"
-	git clone $GIT_REPO /app
-	cd /app
-	git checkout $GIT_TAG
+	if [ ! -z "$GIT_REPO" ]; then
+		echo "   Cloning repo from $GIT_REPO"
+		git clone $GIT_REPO /app
+		cd /app
+		git checkout $GIT_TAG
+	else
+		echo "   ERROR: No application found in /app, and no \$GIT_REPO defined"
+		exit 1
+	fi
 else
-	echo "=> Using existing app in /app"
+	echo "   Using existing app in /app"
 	cd /app
 fi
-cd .$DOCKERFILE_PATH
+cd .${DOCKERFILE_PATH-/}
 
 if [ ! -f Dockerfile ]; then
-	echo "=> No Dockerfile detected! Created one using tutum/buildstep"
+	echo "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
 	echo "FROM tutum/buildstep" >> Dockerfile
 fi
 
@@ -36,22 +51,22 @@ if [ -f "./fig-test.yml" ]; then
 	fig -f fig-test.yml -p app up sut
 	RET=$(docker wait app_sut_1)
 	if [ "$RET" != "0" ]; then
-		echo "=> Tests FAILED: $RET"
+		echo "   Tests FAILED: $RET"
 		exit 1
 	else
-		echo "=> Tests PASSED"
+		echo "   Tests PASSED"
 	fi
 else
-	echo "   No tests found (have you created a fig-test.yml file?)"
+	echo "   No tests found - skipping (have you created a fig-test.yml file?)"
 fi
 
-echo "=> Building"
-docker build --rm --force-rm -t $IMAGE_NAME .
+echo "=> Building and pushing image"
+if [ ! -z "$IMAGE_NAME" ]; then
+	docker build --rm --force-rm -t $IMAGE_NAME .
 
-REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
-echo "=> Logging into registry"
-docker login -u $USERNAME -p $PASSWORD -e $EMAIL $REGISTRY
-
-echo "=> Pushing image"
-docker push $IMAGE_NAME
-docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1
+	echo "   Pushing image $IMAGE_NAME"
+	docker push $IMAGE_NAME
+	docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1
+else
+	echo "   WARNING: no \$IMAGE_NAME found - skipping build and push"
+fi

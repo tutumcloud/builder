@@ -8,17 +8,13 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 ## Build from local folder
 
-Run the following docker command:
+Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/docker-builder
+	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r -e IMAGE_NAME=$IMAGE_NAME tutum/docker-builder
 
 Where:
 
-* `$(pwd)` is the path to your application repository (defaults to current path)
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
-* `$USERNAME` is the username to use to log into the registry using `docker login`
-* `$PASSWORD` is the password to use to log into the registry using `docker login`
-* `$EMAIL` is the email to use to log into the registry using `docker login`
 
 
 ## Build from Git repository
@@ -32,7 +28,7 @@ Where:
 * `$GIT_REPO` is the git repository to clone and build, i.e. `https://github.com/tutumcloud/quickstart-python.git`
 * `$GIT_TAG` is the tag/branch/commit to checkout after clone, i.e. `master`
 * `$DOCKERFILE_PATH` is the relative path to the root of the repository where the `Dockerfile` is present, i.e. `/`
-* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
+* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/quickstart-python:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 * `$EMAIL` is the email to use to log into the registry using `docker login`
@@ -65,7 +61,7 @@ If you want to cache the images used for building and testing, run the following
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
-## Adding credentials to pull private images
+## Adding credentials via .dockercfg
 
 If your tests depend on private images, you can pass their credentials either by mounting your local `.dockercfg` file inside the container appending `-v $HOME/.dockercfg:/.dockercfg:r`, or by providing the contents of this file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.dockercfg)`
 	
