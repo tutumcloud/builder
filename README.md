@@ -36,7 +36,7 @@ Where:
 
 # Testing
 
-If you want to test your app before building, create a `fig-test.yml` file in your repository root with a service called `sut` which will be run for testing. If that container exits successfully (exit code 0), the build will continue; otherwise, the build will fail and the image won't be built nor pushed.
+If you want to test your app before building, create a `fig-test.yml` file in your repository root with a service called `sut` which will be run for testing. You can specify another file name in `$FIGTEST_FILENAME` if required. If that container exits successfully (exit code 0), the build will continue; otherwise, the build will fail and the image won't be built nor pushed.
 
 Example `fig-test.yml` file for a Django app that depends on a Redis cache:
 

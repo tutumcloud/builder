@@ -47,8 +47,9 @@ if [ ! -f Dockerfile ]; then
 fi
 
 echo "=> Testing repo"
-if [ -f "./fig-test.yml" ]; then
-	fig -f fig-test.yml -p app up sut
+FIGTEST_FILENAME=${FIGTEST_FILENAME-fig-test.yml}
+if [ -f "./${FIGTEST_FILENAME}" ]; then
+	fig -f ${FIGTEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
 	if [ "$RET" != "0" ]; then
 		echo "   Tests FAILED: $RET"
@@ -57,7 +58,7 @@ if [ -f "./fig-test.yml" ]; then
 		echo "   Tests PASSED"
 	fi
 else
-	echo "   No tests found - skipping (have you created a fig-test.yml file?)"
+	echo "   No tests found - skipping (have you created a ${FIGTEST_FILENAME} file?)"
 fi
 
 echo "=> Building and pushing image"
