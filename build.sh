@@ -1,14 +1,16 @@
 #!/bin/bash
 set -e
-export PORT=2375
-export DOCKER_HOST=tcp://127.0.0.1:2375
 
-echo "=> Starting docker"
-wrapdocker > /dev/null 2>&1 &
-sleep 2
-
-echo "=> Checking docker daemon"
-docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+if [ -S /var/run/docker.sock ]; then
+	echo "=> Detected unix socket at /var/run/docker.sock"
+	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
+else
+	echo "=> Starting docker"
+	wrapdocker > /dev/null 2>&1 &
+	sleep 2
+	echo "=> Checking docker daemon"
+	docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+fi
 
 echo "=> Loading docker auth configuration"
 if [ -f /.dockercfg ]; then
@@ -27,10 +29,15 @@ fi
 echo "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
-		echo "   Cloning repo from $GIT_REPO"
+		echo "   Cloning repo from $GIT_REPO in /app"
 		git clone $GIT_REPO /app
 		cd /app
 		git checkout $GIT_TAG
+	elif [ ! -z "$TGZ_URL" ]; then
+		echo "   Downloading $TGZ_URL to /app"
+		mkdir -p /app
+		curl -sL $TGZ_URL | tar zx -C /app
+		cd /app
 	else
 		echo "   ERROR: No application found in /app, and no \$GIT_REPO defined"
 		exit 1
