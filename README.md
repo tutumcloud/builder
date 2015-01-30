@@ -16,22 +16,40 @@ Where:
 
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
 
+This will use the `~/.dockercfg` file which should be prepopulated with credentials by using `docker login <registry>` in the host. You can altervatively use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
+
 
 ## Build from Git repository
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder
+	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder
 
 Where:
 
 * `$GIT_REPO` is the git repository to clone and build, i.e. `https://github.com/tutumcloud/quickstart-python.git`
-* `$GIT_TAG` is the tag/branch/commit to checkout after clone, i.e. `master`
-* `$DOCKERFILE_PATH` is the relative path to the root of the repository where the `Dockerfile` is present, i.e. `/`
+* `$GIT_TAG` (optional, defaults to `master`) is the tag/branch/commit to checkout after clone, i.e. `master`
+* `$DOCKERFILE_PATH` (optional, defaults to `/`) is the relative path to the root of the repository where the `Dockerfile` is present, i.e. `/`
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/quickstart-python:latest`
 * `$USERNAME` is the username to use to log into the registry using `docker login`
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
-* `$EMAIL` is the email to use to log into the registry using `docker login`
+* `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
+
+
+## Build from compressed tarball
+
+Run the following docker command:
+
+	docker run --rm -it --privileged -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder
+
+Where:
+
+* `$TGZ_URL` is the URL to the compressed tarball (.tgz) to download and build, i.e. `https://github.com/tutumcloud/docker-hello-world/archive/v1.0.tar.gz`
+* `$DOCKERFILE_PATH` (optional, defaults to `/`) is the relative path to the root of the tarball where the `Dockerfile` is present, i.e. `/docker-hello-world-1.0`
+* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
+* `$USERNAME` is the username to use to log into the registry using `docker login`
+* `$PASSWORD` is the password to use to log into the registry using `docker login`
+* `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
 
 # Testing
@@ -64,4 +82,7 @@ And then run your builds as above appending `--volumes-from builder_cache` to th
 ## Adding credentials via .dockercfg
 
 If your tests depend on private images, you can pass their credentials either by mounting your local `.dockercfg` file inside the container appending `-v $HOME/.dockercfg:/.dockercfg:r`, or by providing the contents of this file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.dockercfg)`
-	
+
+## Using the host docker daemon instead of docker-in-docker
+
+If you want to use the host docker daemon instead of letting the container run its own, mount the host's docker unix socket inside the container by appending `-v /var/run/docker.sock:/var/run/docker.sock:rw` to the `docker run` command.
