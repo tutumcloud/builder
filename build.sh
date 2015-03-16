@@ -68,13 +68,14 @@ else
 	echo "   No tests found - skipping (have you created a ${FIGTEST_FILENAME} file?)"
 fi
 
-echo "=> Building and pushing image"
 if [ ! -z "$IMAGE_NAME" ]; then
+	echo "=> Building image $IMAGE_NAME"
 	docker build --rm --force-rm -t $IMAGE_NAME .
-
-	echo "   Pushing image $IMAGE_NAME"
-	docker push $IMAGE_NAME
-	docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1
+	if [ ! -z "$USERNAME" ] || [ ! -z "$DOCKERCFG" ] || [ -f /.dockercfg ]; then
+		echo "=>  Pushing image $IMAGE_NAME"
+		docker push $IMAGE_NAME
+		docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1
+	fi
 else
 	echo "   WARNING: no \$IMAGE_NAME found - skipping build and push"
 fi
