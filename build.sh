@@ -15,15 +15,16 @@ fi
 echo "=> Loading docker auth configuration"
 if [ -f /.dockercfg ]; then
 	echo "   Using existing configuration in /.dockercfg"
+	ln -s /.dockercfg /root/.dockercfg
 elif [ ! -z "$DOCKERCFG" ]; then
 	echo "   Detected configuration in \$DOCKERCFG"
-	echo $DOCKERCFG > /.dockercfg
+	echo "$DOCKERCFG" > /root/.dockercfg
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	echo "   Logging into registry using $USERNAME"
 	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY
 else
-	echo "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG found - unable to load any credentials for pusing/pulling"
+	echo "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG found - unable to load any credentials for pushing/pulling"
 fi
 
 echo "=> Detecting application"
@@ -54,9 +55,12 @@ if [ ! -f Dockerfile ]; then
 fi
 
 echo "=> Testing repo"
-FIGTEST_FILENAME=${FIGTEST_FILENAME-fig-test.yml}
-if [ -f "./${FIGTEST_FILENAME}" ]; then
-	fig -f ${FIGTEST_FILENAME} -p app up sut
+TEST_FILENAME=${TEST_FILENAME-docker-compose-test.yml}
+if [ -f "./${TEST_FILENAME}" ]; then
+	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
+	# TODO: remove when fixed
+	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
+	docker-compose -f ${TEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
 	if [ "$RET" != "0" ]; then
 		echo "   Tests FAILED: $RET"
@@ -65,7 +69,7 @@ if [ -f "./${FIGTEST_FILENAME}" ]; then
 		echo "   Tests PASSED"
 	fi
 else
-	echo "   No tests found - skipping (have you created a ${FIGTEST_FILENAME} file?)"
+	echo "   No tests found - skipping (have you created a ${TEST_FILENAME} file?)"
 fi
 
 echo "=> Building and pushing image"
