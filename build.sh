@@ -62,6 +62,8 @@ if [ -f "./${TEST_FILENAME}" ]; then
 	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
 	docker-compose -f ${TEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
+	docker-compose -f ${TEST_FILENAME} -p app kill
+	docker-compose -f ${TEST_FILENAME} -p app rm --force -v
 	if [ "$RET" != "0" ]; then
 		echo "   Tests FAILED: $RET"
 		exit 1
