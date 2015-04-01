@@ -16,7 +16,7 @@ Where:
 
 * `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
 
-This will use the `~/.dockercfg` file which should be prepopulated with credentials by using `docker login <registry>` in the host. You can altervatively use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
+This will use the `~/.dockercfg` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
 
 
 ## Build from Git repository
