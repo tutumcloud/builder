@@ -32,6 +32,10 @@ if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
 		echo "   Cloning repo from $GIT_REPO in /app"
 		git clone $GIT_REPO /app
+		if [ $? -ne 0 ]; then
+			echo "   ERROR: Error cloning $GIT_REPO"
+			exit 1
+		fi
 		cd /app
 		git checkout $GIT_TAG
 	elif [ ! -z "$TGZ_URL" ]; then
