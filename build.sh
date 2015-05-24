@@ -30,7 +30,7 @@ fi
 echo "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
-		echo "   Cloning repo from $GIT_REPO in /app"
+		echo "   Cloning repo from ${GIT_REPO##*@} in /app"
 		git clone $GIT_REPO /app
 		if [ $? -ne 0 ]; then
 			echo "   ERROR: Error cloning $GIT_REPO"
@@ -64,6 +64,7 @@ if [ -f "./${TEST_FILENAME}" ]; then
 	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
 	# TODO: remove when fixed
 	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
+	echo "=>  Executing tests"
 	docker-compose -f ${TEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
 	docker-compose -f ${TEST_FILENAME} -p app kill
@@ -84,8 +85,9 @@ if [ ! -z "$IMAGE_NAME" ]; then
 	if [ ! -z "$USERNAME" ] || [ ! -z "$DOCKERCFG" ] || [ -f /.dockercfg ]; then
 		echo "=>  Pushing image $IMAGE_NAME"
 		docker push $IMAGE_NAME
-		docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1
+		echo "=>  Pushed image $IMAGE_NAME"
+		docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
 	fi
 else
-	echo "   WARNING: no \$IMAGE_NAME found - skipping build and push"
+	echo "   Skipping build and push"
 fi
