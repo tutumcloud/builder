@@ -42,19 +42,19 @@ fi
 echo "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
-		echo "   Cloning repo from ${GIT_REPO##*@} in /app"
-		git clone $GIT_REPO /app
+		echo "   Cloning repo from ${GIT_REPO##*@}"
+		git clone $GIT_REPO /src
 		if [ $? -ne 0 ]; then
 			echo "   ERROR: Error cloning $GIT_REPO"
 			exit 1
 		fi
-		cd /app
+		cd /src
 		git checkout $GIT_TAG
 	elif [ ! -z "$TGZ_URL" ]; then
-		echo "   Downloading $TGZ_URL to /app"
-		mkdir -p /app
-		curl -sL $TGZ_URL | tar zx -C /app
-		cd /app
+		echo "   Downloading $TGZ_URL"
+		mkdir -p /src
+		curl -sL $TGZ_URL | tar zx -C /src
+		cd /src
 	else
 		echo "   ERROR: No application found in /app, and no \$GIT_REPO defined"
 		exit 1
@@ -62,7 +62,9 @@ if [ ! -d /app ]; then
 	run_hook post_checkout
 else
 	echo "   Using existing app in /app"
-	cd /app
+	mkdir -p /src
+	cp -r /app/* /src
+	cd /src
 fi
 cd .${DOCKERFILE_PATH:-/}
 if [ -d "hooks" ]; then
@@ -76,7 +78,7 @@ fi
 
 echo "=> Building repository"
 run_hook pre_build
-docker build --rm --force-rm -t app_sut_1 .
+docker build --rm --force-rm -t this .
 run_hook post_build
 
 echo "=> Testing repo"
@@ -111,7 +113,7 @@ if [ ! -z "$IMAGE_NAME" ]; then
 	if [ ! -z "$USERNAME" ] || [ ! -z "$DOCKERCFG" ] || [ -f /.dockercfg ]; then
 		echo "=>  Pushing image $IMAGE_NAME"
 		run_hook pre_push
-		docker tag -f app_sut_1 $IMAGE_NAME
+		docker tag -f this $IMAGE_NAME
 		docker push $IMAGE_NAME
 		run_hook post_push
 		echo "=>  Pushed image $IMAGE_NAME"
