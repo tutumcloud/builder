@@ -1,5 +1,5 @@
 tutum/builder
-====================
+=============
 
 A docker image that builds, tests and pushes docker images from code repositories.
 
@@ -10,11 +10,11 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r -e IMAGE_NAME=$IMAGE_NAME tutum/builder
+	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r tutum/builder $IMAGE_NAME
 
 Where:
 
-* `$IMAGE_NAME` is the name of the image to create with an optional tag, i.e. `tutum/hello-world:latest`
+* `$IMAGE_NAME` (optional) is the name of the image to build and push with an optional tag, i.e. `tutum/hello-world:latest`. If not specified, it will be built and tested, but not pushed. It can also be passed in as an environment variable `-e IMAGE_NAME=$IMAGE_NAME`.
 
 This will use the `~/.dockercfg` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
 
@@ -23,7 +23,7 @@ This will use the `~/.dockercfg` file which should be prepopulated with credenti
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder
+	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -40,7 +40,7 @@ Where:
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e IMAGE_NAME=$IMAGE_NAME -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder
+	docker run --rm -it --privileged -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -54,9 +54,9 @@ Where:
 
 # Testing
 
-If you want to test your app before building, create a `docker-compose-test.yml` file in your repository root with a service called `sut` which will be run for testing. You can specify another file name in `$TEST_FILENAME` if required. If that container exits successfully (exit code 0), the build will continue; otherwise, the build will fail and the image won't be built nor pushed.
+If you want to test your app before building, create a `docker-compose.test.yml` file in your repository root with a service called `sut` which will be run for testing. You can specify another file name in `$TEST_FILENAME` if required. If that container exits successfully (exit code 0), the build will continue; otherwise, the build will fail and the image won't be built nor pushed.
 
-Example `docker-compose-test.yml` file for a Django app that depends on a Redis cache:
+Example `docker-compose.test.yml` file for a Django app that depends on a Redis cache:
 
 	sut:
 	  build: .
@@ -67,6 +67,21 @@ Example `docker-compose-test.yml` file for a Django app that depends on a Redis 
 	  image: tutum/redis
 	  environment:
 	    - REDIS_PASS=password
+
+
+# Hooks
+
+There is the possibility to run scripts before and after some of the build steps to set up your application as required. The following hooks are available (in this order):
+
+* `hooks/post_checkout` (does not run if mounting `/app`)
+* `hooks/pre_build`
+* `hooks/post_build`
+* `hooks/pre_test`
+* `hooks/post_test`
+* `hooks/pre_push`
+* `hooks/post_push`
+
+Create a file in your repository in a folder called `hooks` with those names and the builder will execute them before and after each step.
 
 
 # Notes

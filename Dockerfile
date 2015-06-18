@@ -1,9 +1,8 @@
 FROM jpetazzo/dind:latest
-MAINTAINER fernando@tutum.co
+MAINTAINER support@tutum.co
 
-RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/docker/compose/releases/download/1.1.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose
+ADD https://github.com/docker/compose/releases/download/1.2.0/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
+RUN chmod +x /usr/local/bin/docker-compose
 
 ADD build.sh /
-
-CMD ["/build.sh"]
+ENTRYPOINT ["/build.sh"]
