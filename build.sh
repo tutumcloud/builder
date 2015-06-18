@@ -12,11 +12,16 @@ run_hook() {
 }
 
 EXTERNAL_DOCKER=no
+MOUNTED_DOCKER_FOLDER=no
 if [ -S /var/run/docker.sock ]; then
 	echo "=> Detected unix socket at /var/run/docker.sock"
 	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
 	EXTERNAL_DOCKER=yes
 else
+	if [ "$(ls -A /var/lib/docker)" ]; then
+		echo "=> Detected pre-existing /var/lib/docker folder"
+		MOUNTED_DOCKER_FOLDER=yes
+	fi
 	echo "=> Starting docker"
 	wrapdocker > /dev/null 2>&1 &
 	sleep 2
@@ -117,7 +122,7 @@ if [ ! -z "$IMAGE_NAME" ]; then
 		docker push $IMAGE_NAME
 		run_hook post_push
 		echo "=>  Pushed image $IMAGE_NAME"
-		if [ "$EXTERNAL_DOCKER" == "no" ]; then
+		if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
 			echo "=>  Cleaning up images"
 			docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
 		fi
