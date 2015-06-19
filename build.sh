@@ -44,6 +44,7 @@ else
 	echo "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG found - unable to load any credentials for pushing/pulling"
 fi
 
+rm -fr /src && mkdir -p /src
 echo "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
@@ -57,9 +58,7 @@ if [ ! -d /app ]; then
 		git checkout $GIT_TAG
 	elif [ ! -z "$TGZ_URL" ]; then
 		echo "   Downloading $TGZ_URL"
-		mkdir -p /src
 		curl -sL $TGZ_URL | tar zx -C /src
-		cd /src
 	else
 		echo "   ERROR: No application found in /app, and no \$GIT_REPO defined"
 		exit 1
@@ -67,11 +66,9 @@ if [ ! -d /app ]; then
 	run_hook post_checkout
 else
 	echo "   Using existing app in /app"
-	mkdir -p /src
 	cp -r /app/* /src
-	cd /src
 fi
-cd .${DOCKERFILE_PATH:-/}
+cd /src${DOCKERFILE_PATH:-/}
 if [ -d "hooks" ]; then
 	chmod +x hooks/*
 fi
