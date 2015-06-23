@@ -15,6 +15,14 @@ EXTERNAL_DOCKER=no
 MOUNTED_DOCKER_FOLDER=no
 if [ -S /var/run/docker.sock ]; then
 	echo "=> Detected unix socket at /var/run/docker.sock"
+	echo "=> Testing if docker version matches"
+	if ! docker version > /dev/null 2>&1 ; then
+	export DOCKER_VERSION=$(cat version_list | grep -P "^$(docker version 2>&1 > /dev/null | grep -iF "client and server don't have same version" | grep -oP 'server: *\d*\.\d*' | grep -oP '\d*\.\d*') .*$" | cut -d " " -f2)
+		if [ "${DOCKER_VERSION}" != "" ]; then
+			echo "=> Downloading Docker ${DOCKER_VERSION}"
+			curl -o /usr/bin/docker https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}
+		fi
+	fi
 	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
 	EXTERNAL_DOCKER=yes
 else
