@@ -44,6 +44,7 @@ if [ -f /.dockercfg ]; then
 elif [ ! -z "$DOCKERCFG" ]; then
 	echo "   Detected configuration in \$DOCKERCFG"
 	echo "$DOCKERCFG" > /root/.dockercfg
+	unset DOCKERCFG
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	echo "   Logging into registry using $USERNAME"
@@ -62,6 +63,7 @@ if [ ! -d /app ]; then
 			echo "   ERROR: Error cloning $GIT_REPO"
 			exit 1
 		fi
+		unset GIT_REPO
 		cd /src
 		git checkout $GIT_TAG
 	elif [ ! -z "$TGZ_URL" ]; then
@@ -103,7 +105,13 @@ if [ -f "./${TEST_FILENAME}" ]; then
 	echo "=>  Executing tests"
 	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
 	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
+
 	docker-compose -f ${TEST_FILENAME} -p app build sut
+
+	if [ -z "$IMAGE_NAME" ]; then
+		rm -f /root/.dockercfg
+	fi
+
 	docker-compose -f ${TEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
 	docker-compose -f ${TEST_FILENAME} -p app kill
