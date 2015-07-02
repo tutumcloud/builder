@@ -104,7 +104,10 @@ run_hook pre_test
 if [ -f "./${TEST_FILENAME}" ]; then
 	echo "=>  Executing tests"
 	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
-	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
+	IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
+	if [ ! -z "$IMAGES" ]; then
+		echo $IMAGES | xargs -n1 docker pull
+	fi
 
 	docker-compose -f ${TEST_FILENAME} -p app build sut
 
