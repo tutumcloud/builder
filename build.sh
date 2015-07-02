@@ -131,7 +131,7 @@ fi
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
-	if [ ! -z "$USERNAME" ] || [ ! -z "$DOCKERCFG" ] || [ -f /.dockercfg ]; then
+	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ]; then
 		echo "=>  Pushing image $IMAGE_NAME"
 		run_hook pre_push
 		docker tag -f this $IMAGE_NAME
