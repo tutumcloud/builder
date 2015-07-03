@@ -95,6 +95,7 @@ run_hook post_build
 
 run_hook pre_test
 for TEST_FILENAME in *{.test.yml,-test.yml}
+do
     if [ $TEST_FILENAME != "*.test.yml" ] && [ $TEST_FILENAME != "*-test.yml" ]; then
         echo "=>  Executing tests in $TEST_FILENAME"
         # Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
@@ -120,6 +121,7 @@ for TEST_FILENAME in *{.test.yml,-test.yml}
             echo "   Tests in $TEST_FILENAME PASSED"
         fi
     fi
+done
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
