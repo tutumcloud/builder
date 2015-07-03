@@ -93,7 +93,7 @@ The following environment variables are available for testing, when executing th
 * GIT_TAG which contains the branch/tag/commit being tested
 * GIT_SHA1 which contains the commmit hash of the tag being tested
 * IMAGE_NAME which contains the name of the docker repository being built (not defined for automated tests triggered outside of an automated build)
-You can use the above environment variables by setting them in your sut service:
+
 
 # Notes
 
