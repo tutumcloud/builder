@@ -93,16 +93,11 @@ run_hook pre_build
 docker build --rm --force-rm -t this .
 run_hook post_build
 
-echo "=> Testing repo"
-TEST_FILENAME=${TEST_FILENAME:-docker-compose.test.yml}
-if [ ! -f "./${TEST_FILENAME}" ] && [ -f "./docker-compose-test.yml" ]; then
-	echo "   WARNING: docker-compose-test.yml is deprecated. Rename your test file to docker-compose.test.yml"
-	TEST_FILENAME=docker-compose-test.yml
-fi
-
 run_hook pre_test
-if [ -f "./${TEST_FILENAME}" ]; then
-	echo "=>  Executing tests"
+shopt -s nullglob
+for TEST_FILENAME in *{.test.yml,-test.yml}
+do
+	echo "=>  Executing tests in $TEST_FILENAME"
 	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
 	IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
 	if [ ! -z "$IMAGES" ]; then
@@ -120,14 +115,12 @@ if [ -f "./${TEST_FILENAME}" ]; then
 	docker-compose -f ${TEST_FILENAME} -p app kill
 	docker-compose -f ${TEST_FILENAME} -p app rm --force -v
 	if [ "$RET" != "0" ]; then
-		echo "   Tests FAILED: $RET"
+		echo "   Tests in $TEST_FILENAME FAILED: $RET"
 		exit 1
 	else
-		echo "   Tests PASSED"
+		echo "   Tests in $TEST_FILENAME PASSED"
 	fi
-else
-	echo "   No tests found - skipping (have you created a ${TEST_FILENAME} file?)"
-fi
+done
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
