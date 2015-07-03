@@ -15,6 +15,14 @@ EXTERNAL_DOCKER=no
 MOUNTED_DOCKER_FOLDER=no
 if [ -S /var/run/docker.sock ]; then
 	echo "=> Detected unix socket at /var/run/docker.sock"
+	echo "=> Testing if docker version matches"
+	if ! docker version > /dev/null 2>&1 ; then
+	export DOCKER_VERSION=$(cat version_list | grep -P "^$(docker version 2>&1 > /dev/null | grep -iF "client and server don't have same version" | grep -oP 'server: *\d*\.\d*' | grep -oP '\d*\.\d*') .*$" | cut -d " " -f2)
+		if [ "${DOCKER_VERSION}" != "" ]; then
+			echo "=> Downloading Docker ${DOCKER_VERSION}"
+			curl -o /usr/bin/docker https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}
+		fi
+	fi
 	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
 	EXTERNAL_DOCKER=yes
 else
@@ -36,6 +44,7 @@ if [ -f /.dockercfg ]; then
 elif [ ! -z "$DOCKERCFG" ]; then
 	echo "   Detected configuration in \$DOCKERCFG"
 	echo "$DOCKERCFG" > /root/.dockercfg
+	unset DOCKERCFG
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	echo "   Logging into registry using $USERNAME"
@@ -54,6 +63,7 @@ if [ ! -d /app ]; then
 			echo "   ERROR: Error cloning $GIT_REPO"
 			exit 1
 		fi
+		unset GIT_REPO
 		cd /src
 		git checkout $GIT_TAG
 	elif [ ! -z "$TGZ_URL" ]; then
@@ -94,8 +104,17 @@ run_hook pre_test
 if [ -f "./${TEST_FILENAME}" ]; then
 	echo "=>  Executing tests"
 	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
-	cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}' | xargs -n1 docker pull
+	IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
+	if [ ! -z "$IMAGES" ]; then
+		echo $IMAGES | xargs -n1 docker pull
+	fi
+
 	docker-compose -f ${TEST_FILENAME} -p app build sut
+
+	if [ -z "$IMAGE_NAME" ]; then
+		rm -f /root/.dockercfg
+	fi
+
 	docker-compose -f ${TEST_FILENAME} -p app up sut
 	RET=$(docker wait app_sut_1)
 	docker-compose -f ${TEST_FILENAME} -p app kill
@@ -112,7 +131,7 @@ fi
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
-	if [ ! -z "$USERNAME" ] || [ ! -z "$DOCKERCFG" ] || [ -f /.dockercfg ]; then
+	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ]; then
 		echo "=>  Pushing image $IMAGE_NAME"
 		run_hook pre_push
 		docker tag -f this $IMAGE_NAME
