@@ -93,13 +93,6 @@ run_hook pre_build
 docker build --rm --force-rm -t this .
 run_hook post_build
 
-echo "=> Testing repo"
-TEST_FILENAME=${TEST_FILENAME:-docker-compose.test.yml}
-if [ ! -f "./${TEST_FILENAME}" ] && [ -f "./docker-compose-test.yml" ]; then
-	echo "   WARNING: docker-compose-test.yml is deprecated. Rename your test file to docker-compose.test.yml"
-	TEST_FILENAME=docker-compose-test.yml
-fi
-
 run_hook pre_test
 for TEST_FILENAME in *{.test.yml,-test.yml}
     if [ $TEST_FILENAME != "*.test.yml" ] && [ $TEST_FILENAME != "*-test.yml" ]; then
