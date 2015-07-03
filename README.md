@@ -85,6 +85,15 @@ There is the possibility to run scripts before and after some of the build steps
 
 Create a file in your repository in a folder called `hooks` with those names and the builder will execute them before and after each step.
 
+# Environment Variables
+
+The following environment variables are available for testing, when executing the docker-compose.test.yml file; and during the execution of Hooks.
+
+* GIT_BRANCH which contains the name of the branch that is currently being tested
+* GIT_TAG which contains the branch/tag/commit being tested
+* GIT_SHA1 which contains the commmit hash of the tag being tested
+* IMAGE_NAME which contains the name of the docker repository being built (not defined for automated tests triggered outside of an automated build)
+You can use the above environment variables by setting them in your sut service:
 
 # Notes
 
