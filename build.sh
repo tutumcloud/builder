@@ -101,33 +101,32 @@ if [ ! -f "./${TEST_FILENAME}" ] && [ -f "./docker-compose-test.yml" ]; then
 fi
 
 run_hook pre_test
-if [ -f "./${TEST_FILENAME}" ]; then
-	echo "=>  Executing tests"
-	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
-	IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
-	if [ ! -z "$IMAGES" ]; then
-		echo $IMAGES | xargs -n1 docker pull
-	fi
+for TEST_FILENAME in *{.test.yml,-test.yml}
+    if [ $TEST_FILENAME != "*.test.yml" ] && [ $TEST_FILENAME != "*-test.yml" ]; then
+        echo "=>  Executing tests in $TEST_FILENAME"
+        # Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
+        IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
+        if [ ! -z "$IMAGES" ]; then
+            echo $IMAGES | xargs -n1 docker pull
+        fi
 
-	docker-compose -f ${TEST_FILENAME} -p app build sut
+        docker-compose -f ${TEST_FILENAME} -p app build sut
 
-	if [ -z "$IMAGE_NAME" ]; then
-		rm -f /root/.dockercfg
-	fi
+        if [ -z "$IMAGE_NAME" ]; then
+            rm -f /root/.dockercfg
+        fi
 
-	docker-compose -f ${TEST_FILENAME} -p app up sut
-	RET=$(docker wait app_sut_1)
-	docker-compose -f ${TEST_FILENAME} -p app kill
-	docker-compose -f ${TEST_FILENAME} -p app rm --force -v
-	if [ "$RET" != "0" ]; then
-		echo "   Tests FAILED: $RET"
-		exit 1
-	else
-		echo "   Tests PASSED"
-	fi
-else
-	echo "   No tests found - skipping (have you created a ${TEST_FILENAME} file?)"
-fi
+        docker-compose -f ${TEST_FILENAME} -p app up sut
+        RET=$(docker wait app_sut_1)
+        docker-compose -f ${TEST_FILENAME} -p app kill
+        docker-compose -f ${TEST_FILENAME} -p app rm --force -v
+        if [ "$RET" != "0" ]; then
+            echo "   Tests in $TEST_FILENAME FAILED: $RET"
+            exit 1
+        else
+            echo "   Tests in $TEST_FILENAME PASSED"
+        fi
+    fi
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
