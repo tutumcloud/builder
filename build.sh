@@ -8,6 +8,10 @@ run_hook() {
 	if [ -f "$HOOK" ]; then
 		echo "=> Executing $HOOK hook"
 		./$HOOK
+		if [ $? -ne 0 ]; then
+			echo "ERROR: $HOOK failed with exit code $?"
+			exit 1
+		fi
 	fi
 }
 
