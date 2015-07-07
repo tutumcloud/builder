@@ -81,7 +81,7 @@ if [ ! -d /app ]; then
 	run_hook post_checkout
 else
 	echo "   Using existing app in /app"
-	cp -r /app/* /src
+	cp -r /app/. /src
 fi
 cd /src${DOCKERFILE_PATH:-/}
 if [ -d "hooks" ]; then
