@@ -35,6 +35,8 @@ Where:
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 * `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
+If you want to use a SSH key to clone your repository, mount your SSH private key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above.
+
 
 ## Build from compressed tarball
 
