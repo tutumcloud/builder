@@ -79,10 +79,13 @@ There is the possibility to run scripts before and after some of the build steps
 
 * `hooks/post_checkout` (does not run if mounting `/app`)
 * `hooks/pre_build`
+* `hooks/build` (to override the default **build** step)
 * `hooks/post_build`
 * `hooks/pre_test`
+* `hooks/test` (to override the default **test** step)
 * `hooks/post_test`
 * `hooks/pre_push`
+* `hooks/push` (to override the default **push** step)
 * `hooks/post_push`
 
 Create a file in your repository in a folder called `hooks` with those names and the builder will execute them before and after each step.

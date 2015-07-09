@@ -95,50 +95,62 @@ fi
 
 echo "=> Building repository"
 run_hook pre_build
-docker build --rm --force-rm -t this .
+if [ -f "hooks/build" ]; then
+	run_hook build
+else
+	docker build --rm --force-rm -t this .
+fi
 run_hook post_build
 
 run_hook pre_test
-shopt -s nullglob
-for TEST_FILENAME in *{.test.yml,-test.yml}
-do
-	echo "=>  Executing tests in $TEST_FILENAME"
-	# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
-	IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
-	if [ ! -z "$IMAGES" ]; then
-		echo $IMAGES | xargs -n1 docker pull
-	fi
+if [ -f "hooks/test" ]; then
+	run_hook test
+else
+	shopt -s nullglob
+	for TEST_FILENAME in *{.test.yml,-test.yml}
+	do
+		echo "=>  Executing tests in $TEST_FILENAME"
+		# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
+		IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
+		if [ ! -z "$IMAGES" ]; then
+			echo $IMAGES | xargs -n1 docker pull
+		fi
 
-	docker-compose -f ${TEST_FILENAME} -p app build sut
+		docker-compose -f ${TEST_FILENAME} -p app build sut
 
-	if [ -z "$IMAGE_NAME" ]; then
-		rm -f /root/.dockercfg
-	fi
+		if [ -z "$IMAGE_NAME" ]; then
+			rm -f /root/.dockercfg
+		fi
 
-	docker-compose -f ${TEST_FILENAME} -p app up sut
-	RET=$(docker wait app_sut_1)
-	docker-compose -f ${TEST_FILENAME} -p app kill
-	docker-compose -f ${TEST_FILENAME} -p app rm --force -v
-	if [ "$RET" != "0" ]; then
-		echo "   Tests in $TEST_FILENAME FAILED: $RET"
-		exit 1
-	else
-		echo "   Tests in $TEST_FILENAME PASSED"
-	fi
-done
+		docker-compose -f ${TEST_FILENAME} -p app up sut
+		RET=$(docker wait app_sut_1)
+		docker-compose -f ${TEST_FILENAME} -p app kill
+		docker-compose -f ${TEST_FILENAME} -p app rm --force -v
+		if [ "$RET" != "0" ]; then
+			echo "   Tests in $TEST_FILENAME FAILED: $RET"
+			exit 1
+		else
+			echo "   Tests in $TEST_FILENAME PASSED"
+		fi
+	done
+fi
 run_hook post_test
 
 if [ ! -z "$IMAGE_NAME" ]; then
 	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ]; then
 		echo "=>  Pushing image $IMAGE_NAME"
 		run_hook pre_push
-		docker tag -f this $IMAGE_NAME
-		docker push $IMAGE_NAME
-		run_hook post_push
-		echo "=>  Pushed image $IMAGE_NAME"
-		if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
-			echo "=>  Cleaning up images"
-			docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
+		if [ -f "hooks/push" ]; then
+			run_hook push
+		else
+			docker tag -f this $IMAGE_NAME
+			docker push $IMAGE_NAME
+			run_hook post_push
+			echo "=>  Pushed image $IMAGE_NAME"
+			if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
+				echo "=>  Cleaning up images"
+				docker rmi -f $(docker images -q --no-trunc -a) > /dev/null 2>&1 || true
+			fi
 		fi
 	fi
 else
