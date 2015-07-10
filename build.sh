@@ -116,16 +116,17 @@ else
 			echo $IMAGES | xargs -n1 docker pull
 		fi
 
-		docker-compose -f ${TEST_FILENAME} -p app build sut
+		docker-compose -f ${TEST_FILENAME} build
 
 		if [ -z "$IMAGE_NAME" ]; then
 			rm -f /root/.dockercfg
 		fi
 
-		docker-compose -f ${TEST_FILENAME} -p app up sut
-		RET=$(docker wait app_sut_1)
-		docker-compose -f ${TEST_FILENAME} -p app kill
-		docker-compose -f ${TEST_FILENAME} -p app rm --force -v
+		PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up sut
+		RET=$(docker wait ${PROJECT_NAME}_sut_1)
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v
 		if [ "$RET" != "0" ]; then
 			echo "   Tests in $TEST_FILENAME FAILED: $RET"
 			exit 1
