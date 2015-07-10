@@ -116,13 +116,13 @@ else
 			echo $IMAGES | xargs -n1 docker pull
 		fi
 
-		docker-compose -f ${TEST_FILENAME} build
+		PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME build
 
 		if [ -z "$IMAGE_NAME" ]; then
 			rm -f /root/.dockercfg
 		fi
 
-		PROJECT_NAME=$(echo $HOSTNAME | tr '[:upper:]' '[:lower:]' | sed s/\\.//g | sed s/-//g)
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up sut
 		RET=$(docker wait ${PROJECT_NAME}_sut_1)
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill
