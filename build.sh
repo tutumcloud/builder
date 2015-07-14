@@ -145,7 +145,11 @@ if [ ! -z "$IMAGE_NAME" ]; then
 			run_hook push
 		else
 			docker tag -f this $IMAGE_NAME
-			docker push $IMAGE_NAME
+			docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
+			while cat /tmp/push-result | grep -q "is already in progress"; do
+				docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
+				sleep 1
+			done
 			run_hook post_push
 			echo "=>  Pushed image $IMAGE_NAME"
 			if [ "$EXTERNAL_DOCKER" == "no" ] && [ "$MOUNTED_DOCKER_FOLDER" == "no" ]; then
