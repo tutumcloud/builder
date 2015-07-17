@@ -15,6 +15,21 @@ run_hook() {
 	fi
 }
 
+run_docker() {
+	echo "=> Starting docker"
+	wrapdocker > /dev/null 2>&1 &
+	echo "=> Checking docker daemon"
+	LOOP_LIMIT=60
+	for (( i=0; ; i++ )); do
+		if [ ${i} -eq ${LOOP_LIMIT} ]; then
+			echo "   Failed to start docker (did you use --privileged when running this container?"
+			exit 1
+		fi
+		sleep 1
+		docker version > /dev/null 2>&1 && break
+	done
+}
+
 EXTERNAL_DOCKER=no
 MOUNTED_DOCKER_FOLDER=no
 if [ -S /var/run/docker.sock ]; then
@@ -34,11 +49,7 @@ else
 		echo "=> Detected pre-existing /var/lib/docker folder"
 		MOUNTED_DOCKER_FOLDER=yes
 	fi
-	echo "=> Starting docker"
-	wrapdocker > /dev/null 2>&1 &
-	sleep 10
-	echo "=> Checking docker daemon"
-	docker version > /dev/null 2>&1 || { echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1; }
+	run_docker
 fi
 
 echo "=> Loading docker auth configuration"
