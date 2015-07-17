@@ -27,7 +27,7 @@ if [ -S /var/run/docker.sock ]; then
 			curl -o /usr/bin/docker https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}
 		fi
 	fi
-	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
+	docker version > /dev/null 2>&1 || { echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1; }
 	EXTERNAL_DOCKER=yes
 else
 	if [ "$(ls -A /var/lib/docker)" ]; then
@@ -38,7 +38,7 @@ else
 	wrapdocker > /dev/null 2>&1 &
 	sleep 10
 	echo "=> Checking docker daemon"
-	docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+	docker version > /dev/null 2>&1 || { echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1; }
 fi
 
 echo "=> Loading docker auth configuration"
