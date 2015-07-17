@@ -10,7 +10,7 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:ro tutum/builder $IMAGE_NAME
 
 Where:
 
