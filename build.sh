@@ -123,7 +123,8 @@ else
 			rm -f /root/.dockercfg
 		fi
 
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up sut
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut
+		docker logs -f ${PROJECT_NAME}_sut_1
 		RET=$(docker wait ${PROJECT_NAME}_sut_1)
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v
