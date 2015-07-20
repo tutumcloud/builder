@@ -70,8 +70,6 @@ Example `docker-compose.test.yml` file for a Django app that depends on a Redis 
 	  environment:
 	    - REDIS_PASS=password
 
-To speed up testing, you can replace `build: .` in your `sut` service with `image: this`, which is the name of the image that is built just before running the tests. This way you can avoid building the same image twice.
-
 
 # Hooks
 
