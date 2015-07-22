@@ -82,6 +82,7 @@ if [ ! -d /app ]; then
 		cd /src
 		git checkout $GIT_TAG
 		export GIT_SHA1=$(git rev-list $GIT_TAG | head -n 1)
+		export GIT_MSG=$(git log --format=%B -n 1 $GIT_SHA1)
 	elif [ ! -z "$TGZ_URL" ]; then
 		echo "   Downloading $TGZ_URL"
 		curl -sL $TGZ_URL | tar zx -C /src
