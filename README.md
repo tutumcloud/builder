@@ -10,7 +10,7 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:ro tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -v $(pwd):/app tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -23,7 +23,7 @@ This will use the `~/.dockercfg` file which should be prepopulated with credenti
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -42,7 +42,7 @@ If you want to use a SSH key to clone your repository, mount your SSH private ke
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
 
 Where:
 
