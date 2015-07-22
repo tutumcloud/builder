@@ -10,7 +10,7 @@ A docker image that builds, tests and pushes docker images from code repositorie
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:r tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $(pwd):/app -v $HOME/.dockercfg:/.dockercfg:ro tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -69,8 +69,6 @@ Example `docker-compose.test.yml` file for a Django app that depends on a Redis 
 	  image: tutum/redis
 	  environment:
 	    - REDIS_PASS=password
-
-To speed up testing, you can replace `build: .` in your `sut` service with `image: this`, which is the name of the image that is built just before running the tests. This way you can avoid building the same image twice.
 
 
 # Hooks

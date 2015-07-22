@@ -15,6 +15,21 @@ run_hook() {
 	fi
 }
 
+run_docker() {
+	echo "=> Starting docker"
+	wrapdocker > /dev/null 2>&1 &
+	echo "=> Checking docker daemon"
+	LOOP_LIMIT=60
+	for (( i=0; ; i++ )); do
+		if [ ${i} -eq ${LOOP_LIMIT} ]; then
+			echo "   Failed to start docker (did you use --privileged when running this container?"
+			exit 1
+		fi
+		sleep 1
+		docker version > /dev/null 2>&1 && break
+	done
+}
+
 EXTERNAL_DOCKER=no
 MOUNTED_DOCKER_FOLDER=no
 if [ -S /var/run/docker.sock ]; then
@@ -27,18 +42,14 @@ if [ -S /var/run/docker.sock ]; then
 			curl -o /usr/bin/docker https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}
 		fi
 	fi
-	docker version > /dev/null 2>&1 || (echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1)
+	docker version > /dev/null 2>&1 || { echo "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1; }
 	EXTERNAL_DOCKER=yes
 else
 	if [ "$(ls -A /var/lib/docker)" ]; then
 		echo "=> Detected pre-existing /var/lib/docker folder"
 		MOUNTED_DOCKER_FOLDER=yes
 	fi
-	echo "=> Starting docker"
-	wrapdocker > /dev/null 2>&1 &
-	sleep 10
-	echo "=> Checking docker daemon"
-	docker version > /dev/null 2>&1 || (echo "   Failed to start docker (did you use --privileged when running this container?)" && exit 1)
+	run_docker
 fi
 
 echo "=> Loading docker auth configuration"
@@ -71,6 +82,7 @@ if [ ! -d /app ]; then
 		cd /src
 		git checkout $GIT_TAG
 		export GIT_SHA1=$(git rev-list $GIT_TAG | head -n 1)
+		export GIT_MSG=$(git log --format=%B -n 1 $GIT_SHA1)
 	elif [ ! -z "$TGZ_URL" ]; then
 		echo "   Downloading $TGZ_URL"
 		curl -sL $TGZ_URL | tar zx -C /src
@@ -123,7 +135,8 @@ else
 			rm -f /root/.dockercfg
 		fi
 
-		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up sut
+		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME up -d sut
+		docker logs -f ${PROJECT_NAME}_sut_1
 		RET=$(docker wait ${PROJECT_NAME}_sut_1)
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME kill
 		docker-compose -f ${TEST_FILENAME} -p $PROJECT_NAME rm --force -v
