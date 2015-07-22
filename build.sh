@@ -92,7 +92,7 @@ print_msg "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
 		print_msg "   Cloning repo from ${GIT_REPO##*@}"
-		git clone $GIT_REPO /src
+		git clone --recursive $GIT_REPO /src
 		if [ $? -ne 0 ]; then
 			print_msg "   ERROR: Error cloning $GIT_REPO"
 			exit 1
