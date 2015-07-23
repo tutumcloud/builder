@@ -2,6 +2,7 @@ tutum/builder
 =============
 
 A docker image that builds, tests and pushes docker images from code repositories.
+It is used by the Tutum platform to automate build and tests. Implementation details can be found in this [blog post](http://blog.tutum.co/2015/07/21/cicd-the-docker-way/).
 
 
 # Usage
