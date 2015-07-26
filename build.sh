@@ -3,13 +3,17 @@ set -e
 
 IMAGE_NAME=${IMAGE_NAME:-$1}
 
+print_msg() {
+	echo -e "\e[1m${1}\e[0m"
+}
+
 run_hook() {
 	HOOK=hooks/$1
 	if [ -f "$HOOK" ]; then
-		echo "=> Executing $HOOK hook"
+		print_msg "=> Executing $HOOK hook"
 		./$HOOK
 		if [ $? -ne 0 ]; then
-			echo "ERROR: $HOOK failed with exit code $?"
+			print_msg "ERROR: $HOOK failed with exit code $?"
 			exit 1
 		fi
 	fi
@@ -28,10 +32,6 @@ run_docker() {
 		sleep 1
 		docker version > /dev/null 2>&1 && break
 	done
-}
-
-print_msg() {
-	echo -e "\e[1m${1}\e[0m"
 }
 
 #
