@@ -157,8 +157,7 @@ else
 	for TEST_FILENAME in *{.test.yml,-test.yml}
 	do
 		print_msg "=> Executing tests in $TEST_FILENAME"
-		# Next command is to workaround the fact that docker-compose does not use .dockercfg to pull images
-		IMAGES=$(cat ./${TEST_FILENAME} | grep "image:" | awk '{print $2}')
+		IMAGES=$(cat ./${TEST_FILENAME} | grep -v "image: *this" | grep "image:" | awk '{print $2}')
 		if [ ! -z "$IMAGES" ]; then
 			echo $IMAGES | xargs -n1 docker pull
 		fi
