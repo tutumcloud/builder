@@ -11,20 +11,20 @@ It is used by the Tutum platform to automate build and tests. Implementation det
 
 Run the following docker command in the folder that you want to build and push:
 
-	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -v $(pwd):/app tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -v $(pwd):/app tutum/builder $IMAGE_NAME
 
 Where:
 
 * `$IMAGE_NAME` (optional) is the name of the image to build and push with an optional tag, i.e. `tutum/hello-world:latest`. If not specified, it will be built and tested, but not pushed. It can also be passed in as an environment variable `-e IMAGE_NAME=$IMAGE_NAME`.
 
-This will use the `~/.dockercfg` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
+This will use the `~/.docker/config.json` file which should be prepopulated with credentials by using `docker login <registry>` in the host. Alternatively, you can use `$USERNAME`, `$PASSWORD` and `$EMAIL` as described below.
 
 
 ## Build from Git repository
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e GIT_REPO=$GIT_REPO -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL -e DOCKERFILE_PATH=$DOCKERFILE_PATH tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -43,7 +43,7 @@ If you want to use a SSH key to clone your repository, mount your SSH private ke
 
 Run the following docker command:
 
-	docker run --rm -it --privileged -v $HOME/.dockercfg:/.dockercfg:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
+	docker run --rm -it --privileged -v $HOME/.docker:/.docker:ro -e TGZ_URL=$TGZ_URL -e DOCKERFILE_PATH=$DOCKERFILE_PATH -e USERNAME=$USERNAME -e PASSWORD=$PASSWORD -e EMAIL=$EMAIL tutum/builder $IMAGE_NAME
 
 Where:
 
@@ -111,9 +111,9 @@ If you want to cache the images used for building and testing, run the following
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
-## Adding credentials via .dockercfg
+## Adding repository credentials
 
-If your tests depend on private images, you can pass their credentials either by mounting your local `.dockercfg` file inside the container appending `-v $HOME/.dockercfg:/.dockercfg:ro`, or by providing the contents of this file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.dockercfg)`
+If your tests depend on private images, you can pass their credentials either by mounting your local `.docker` folder inside the container appending `-v $HOME/.docker:/.docker:ro`, or by providing the contents of the `.docker/config.json` file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.docker/config.json)`
 
 ## Using the host docker daemon instead of docker-in-docker
 
