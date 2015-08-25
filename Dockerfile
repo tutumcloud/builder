@@ -9,5 +9,5 @@ RUN chmod +x /usr/local/bin/docker-compose
 
 
 ADD version_list /
-ADD build.sh /
-ENTRYPOINT ["/build.sh"]
+ADD *.sh /
+ENTRYPOINT ["/run.sh"]
