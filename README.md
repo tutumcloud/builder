@@ -99,6 +99,7 @@ The following environment variables are available for testing, when executing th
 * `$GIT_TAG` which contains the branch/tag/commit being tested
 * `$GIT_SHA1` which contains the commmit hash of the tag being tested
 * `$IMAGE_NAME` which contains the name of the docker repository being built (if defined when launching the container)
+* `$GIT_CLONE_OPTS` which is the option passed to "git clone", default: `--recursive`
 
 
 # Notes
@@ -118,3 +119,7 @@ If your tests depend on private images, you can pass their credentials either by
 ## Using the host docker daemon instead of docker-in-docker
 
 If you want to use the host docker daemon instead of letting the container run its own, mount the host's docker unix socket inside the container by appending `-v /var/run/docker.sock:/var/run/docker.sock:rw` to the `docker run` command.
+
+## Disable recursive strategy on git clone
+
+In some cases, you may need set up credentials for the initialization github submodules, and it may make `git clone --recursive` fail. In such a case, you can disable the default `--recuresive` strategy by setting `-e GIT_CLONE_OPTS=""` and do `git submodule init & git submodule update` manually in `hooks/post_checkout` or `hooks/pre_build`.
