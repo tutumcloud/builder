@@ -119,7 +119,7 @@ else
 	for TEST_FILENAME in *{.test.yml,-test.yml}
 	do
 		print_msg "=> Executing tests in $TEST_FILENAME"
-		IMAGES=$(cat ./${TEST_FILENAME} | grep -v "image: *this" | grep "image:" | awk '{print $2}')
+		IMAGES=$(cat ./${TEST_FILENAME} | grep -v "^#" | grep -v "image: *this" | grep "image:" | awk '{print $2}')
 		if [ ! -z "$IMAGES" ]; then
 			echo $IMAGES | xargs -n1 docker pull
 		fi
