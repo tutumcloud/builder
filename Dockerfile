@@ -1,4 +1,4 @@
-FROM jpetazzo/dind:latest
+FROM tutum/dind:latest
 MAINTAINER support@tutum.co
 
 # Store github.com SSH fingerprint
