@@ -26,11 +26,9 @@ print_msg "=> Loading docker auth configuration"
 if [ -f /.dockercfg ]; then
 	print_msg "   Using existing configuration in /.dockercfg"
 	ln -s /.dockercfg /root/.dockercfg
-	mkdir -p /root/.docker && ln -s /.dockercfg /root/.docker/config.json
 elif [ -d /.docker ]; then
 	print_msg "   Using existing configuration in /.docker"
 	ln -s /.docker /root/.docker
-	ln -s /.docker/config.json /root/.dockercfg
 elif [ ! -z "$DOCKERCFG" ]; then
 	print_msg "   Detected configuration in \$DOCKERCFG"
 	echo "$DOCKERCFG" > /root/.dockercfg
