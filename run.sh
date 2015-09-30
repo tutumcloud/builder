@@ -5,6 +5,24 @@ print_msg() {
 	echo -e "\e[1m${1}\e[0m"
 }
 
+run_docker() {
+	print_msg "=> Starting docker"
+	docker daemon \
+		--host=unix:///var/run/docker.sock \
+		--host=tcp://0.0.0.0:2375 \
+		--storage-driver=devicemapper > /dev/null 2>&1 &
+	print_msg "=> Checking docker daemon"
+	LOOP_LIMIT=60
+	for (( i=0; ; i++ )); do
+		if [ ${i} -eq ${LOOP_LIMIT} ]; then
+			print_msg "   Failed to start docker (did you use --privileged when running this container?"
+			exit 1
+		fi
+		sleep 1
+		docker version > /dev/null 2>&1 && break
+	done
+}
+
 #
 # Start docker-in-docker or use an external docker daemon via mounted socket
 #
@@ -35,9 +53,9 @@ else
 		MOUNTED_DOCKER_FOLDER=yes
 		DOCKER_USED="Using docker-in-docker with an external /var/lib/docker folder"
 	fi
-    print_msg "=> Starting docker"
     export DOCKER_USED=${DOCKER_USED}
     export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
     export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
-    wrapdocker /build.sh "$@"
+    run_docker
+    /build.sh "$@"
 fi
