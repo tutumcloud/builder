@@ -10,12 +10,13 @@ run_docker() {
 	docker daemon \
 		--host=unix:///var/run/docker.sock \
 		--host=tcp://0.0.0.0:2375 \
-		--storage-driver=devicemapper > /dev/null 2>&1 &
+		--storage-driver=devicemapper > /var/log/docker.log 2>&1 &
 	print_msg "=> Checking docker daemon"
 	LOOP_LIMIT=60
 	for (( i=0; ; i++ )); do
 		if [ ${i} -eq ${LOOP_LIMIT} ]; then
-			print_msg "   Failed to start docker (did you use --privileged when running this container?"
+			cat /var/log/docker.log
+			print_msg "   Failed to start docker (did you use --privileged when running this container?)"
 			exit 1
 		fi
 		sleep 1
