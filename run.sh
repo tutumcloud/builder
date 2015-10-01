@@ -9,7 +9,6 @@ run_docker() {
 	print_msg "=> Starting docker"
 	docker daemon \
 		--host=unix:///var/run/docker.sock \
-		--host=tcp://0.0.0.0:2375 \
 		--storage-driver=devicemapper > /var/log/docker.log 2>&1 &
 	print_msg "=> Checking docker daemon"
 	LOOP_LIMIT=60
