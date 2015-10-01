@@ -1,6 +1,26 @@
 #!/bin/bash
 set -e
 
+# Ensure that all nodes in /dev/mapper correspond to mapped devices currently loaded by the device-mapper kernel driver
+dmsetup mknodes
+
+# Now, close extraneous file descriptors.
+pushd /proc/self/fd >/dev/null
+for FD in *
+do
+	case "$FD" in
+	# Keep stdin/stdout/stderr
+	[012])
+		;;
+	# Nuke everything else
+	*)
+		eval exec "$FD>&-"
+		;;
+	esac
+done
+popd >/dev/null
+
+
 print_msg() {
 	echo -e "\e[1m${1}\e[0m"
 }
@@ -9,7 +29,8 @@ run_docker() {
 	print_msg "=> Starting docker"
 	docker daemon \
 		--host=unix:///var/run/docker.sock \
-		--storage-driver=devicemapper > /var/log/docker.log 2>&1 &
+		--storage-driver=devicemapper \
+		$DOCKER_DAEMON_ARGS > /var/log/docker.log 2>&1 &
 	print_msg "=> Checking docker daemon"
 	LOOP_LIMIT=60
 	for (( i=0; ; i++ )); do
