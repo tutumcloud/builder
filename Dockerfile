@@ -2,7 +2,7 @@ FROM ubuntu:trusty
 MAINTAINER support@tutum.co
 
 RUN apt-get update && \
-	DEBIAN_FRONTEND=noninteractive apt-get install -yq iptables apt-transport-https ca-certificates ssh git curl
+	DEBIAN_FRONTEND=noninteractive apt-get install -yq iptables apt-transport-https ca-certificates ssh git curl make
 
 ENV DIND_COMMIT=b8bed8832b77a478360ae946a69dab5e922b194e COMPOSE_VERSION=1.3.3
 RUN curl -sSL https://get.docker.com/ | sh
