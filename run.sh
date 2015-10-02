@@ -26,10 +26,10 @@ print_msg() {
 }
 
 run_docker() {
+	udevd --daemon
 	print_msg "=> Starting docker"
 	docker daemon \
 		--host=unix:///var/run/docker.sock \
-		--storage-driver=devicemapper \
 		$DOCKER_DAEMON_ARGS > /var/log/docker.log 2>&1 &
 	print_msg "=> Checking docker daemon"
 	LOOP_LIMIT=60
