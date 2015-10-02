@@ -1,8 +1,47 @@
 #!/bin/bash
 set -e
 
+# Ensure that all nodes in /dev/mapper correspond to mapped devices currently loaded by the device-mapper kernel driver
+dmsetup mknodes
+
+# Now, close extraneous file descriptors.
+pushd /proc/self/fd >/dev/null
+for FD in *
+do
+	case "$FD" in
+	# Keep stdin/stdout/stderr
+	[012])
+		;;
+	# Nuke everything else
+	*)
+		eval exec "$FD>&-"
+		;;
+	esac
+done
+popd >/dev/null
+
+
 print_msg() {
 	echo -e "\e[1m${1}\e[0m"
+}
+
+run_docker() {
+	udevd --daemon
+	print_msg "=> Starting docker"
+	docker daemon \
+		--host=unix:///var/run/docker.sock \
+		$DOCKER_DAEMON_ARGS > /var/log/docker.log 2>&1 &
+	print_msg "=> Checking docker daemon"
+	LOOP_LIMIT=60
+	for (( i=0; ; i++ )); do
+		if [ ${i} -eq ${LOOP_LIMIT} ]; then
+			cat /var/log/docker.log
+			print_msg "   Failed to start docker (did you use --privileged when running this container?)"
+			exit 1
+		fi
+		sleep 1
+		docker version > /dev/null 2>&1 && break
+	done
 }
 
 #
@@ -35,9 +74,9 @@ else
 		MOUNTED_DOCKER_FOLDER=yes
 		DOCKER_USED="Using docker-in-docker with an external /var/lib/docker folder"
 	fi
-    print_msg "=> Starting docker"
     export DOCKER_USED=${DOCKER_USED}
     export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
     export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
-    wrapdocker /build.sh "$@"
+    run_docker
+    /build.sh "$@"
 fi
