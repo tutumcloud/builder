@@ -36,8 +36,8 @@ Where:
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 * `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
-If you want to use a SSH key to clone your repository, mount your SSH private key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above. Or you can use the environment variable below. The content was put into one line so you can enter them on tutum's UI.
-* `$GIT_ID_RSA` You can pass the id_rsa to it like this: -e GIT_ID_RSA="$(awk 1 ORS='\\n' ~/.ssh/id_rsa)"
+If you want to use a SSH key to clone your repository, mount your private SSH key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above. Or you can use the environment variable below:
+* `$GIT_ID_RSA` (optional) is the private SSH key to use when cloning the git repository (i.e. `-e GIT_ID_RSA="$(awk 1 ORS='\\n' ~/.ssh/id_rsa)"`)
 
 
 ## Build from compressed tarball
