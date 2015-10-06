@@ -49,6 +49,10 @@ rm -fr /src && mkdir -p /src
 print_msg "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
+		if [ ! -z "$GIT_ID_RSA" ]; then
+			echo -e "$GIT_ID_RSA" > /root/.ssh/id_rsa
+			chmod 400 ~/.ssh/id_rsa
+		fi
 		print_msg "   Cloning repo from ${GIT_REPO##*@}"
 		git clone ${GIT_CLONE_OPTS} $GIT_REPO /src
 		if [ $? -ne 0 ]; then
