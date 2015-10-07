@@ -109,7 +109,7 @@ The following environment variables are available for testing, when executing th
 
 If you want to cache the images used for building and testing, run the following:
 
-	docker run --name builder_cache tutum/builder true
+	docker run --name builder_cache --entrypoint /bin/true tutum/builder
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
