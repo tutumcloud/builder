@@ -33,12 +33,17 @@ elif [ ! -z "$DOCKERCFG" ]; then
 	print_msg "   Detected configuration in \$DOCKERCFG"
 	echo "$DOCKERCFG" > /root/.dockercfg
 	unset DOCKERCFG
+elif [ ! -z "$DOCKER_CONFIG" ]; then
+	print_msg "   Detected configuration in \$DOCKER_CONFIG"
+	mkdir -p /root/.docker
+	echo "$DOCKER_CONFIG" > /root/.docker/config.json
+	unset DOCKER_CONFIG
 elif [ ! -z "$USERNAME" ] && [ ! -z "$PASSWORD" ]; then
 	REGISTRY=$(echo $IMAGE_NAME | tr "/" "\n" | head -n1 | grep "\." || true)
 	print_msg "   Logging into registry using $USERNAME"
 	docker login -u $USERNAME -p $PASSWORD -e ${EMAIL-no-email@test.com} $REGISTRY
 else
-	print_msg "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG found - unable to load any credentials for pushing/pulling"
+	print_msg "   WARNING: no \$USERNAME/\$PASSWORD or \$DOCKERCFG or \$DOCKER_CONFIG found - unable to load any credentials for pushing/pulling"
 fi
 
 #
@@ -155,7 +160,7 @@ TEST=${TEST:-"Tests passed in $(($DATE_DIFF / 60)) minutes and $(($DATE_DIFF % 6
 #
 START_DATE=$(date +"%s")
 if [ ! -z "$IMAGE_NAME" ]; then
-	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ]; then
+	if [ ! -z "$USERNAME" ] || [ -f /root/.dockercfg ] || [ -f /root/.docker/config.json ]; then
 		print_msg "=> Pushing image $IMAGE_NAME"
 		run_hook pre_push
 		if [ -f "hooks/push" ]; then
