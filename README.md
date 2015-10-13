@@ -115,7 +115,7 @@ And then run your builds as above appending `--volumes-from builder_cache` to th
 
 ## Adding repository credentials
 
-If your tests depend on private images, you can pass their credentials either by mounting your local `.docker` folder inside the container appending `-v $HOME/.docker:/.docker:ro`, or by providing the contents of the `.docker/config.json` file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.docker/config.json)`
+If your tests depend on private images, you can pass their credentials either by mounting your local `.docker` folder inside the container appending `-v $HOME/.docker:/.docker:ro`, or by providing the contents of the docker configuration file `$HOME/.docker/config.json` via an environment variable called `$DOCKER_CONFIG`. eg `-e DOCKER_CONFIG="$(cat $HOME/.docker/config.json)"`
 
 ## Using the host docker daemon instead of docker-in-docker
 
