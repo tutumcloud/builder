@@ -36,7 +36,8 @@ Where:
 * `$PASSWORD` is the password to use to log into the registry using `docker login`
 * `$EMAIL` (optional) is the email to use to log into the registry using `docker login`
 
-If you want to use a SSH key to clone your repository, mount your SSH private key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above.
+If you want to use a SSH key to clone your repository, mount your private SSH key to `/root/.ssh/id_rsa` inside the container, by appending `-v ~/.ssh/id_rsa:/root/.ssh/id_rsa` to the `docker run` command above. Or you can use the environment variable below:
+* `$GIT_ID_RSA` (optional) is the private SSH key to use when cloning the git repository (i.e. `-e GIT_ID_RSA="$(awk 1 ORS='\\n' ~/.ssh/id_rsa)"`)
 
 
 ## Build from compressed tarball
@@ -108,13 +109,13 @@ The following environment variables are available for testing, when executing th
 
 If you want to cache the images used for building and testing, run the following:
 
-	docker run --name builder_cache tutum/builder true
+	docker run --name builder_cache --entrypoint /bin/true tutum/builder
 
 And then run your builds as above appending `--volumes-from builder_cache` to them to reuse already downloaded image layers.
 
 ## Adding repository credentials
 
-If your tests depend on private images, you can pass their credentials either by mounting your local `.docker` folder inside the container appending `-v $HOME/.docker:/.docker:ro`, or by providing the contents of the `.docker/config.json` file via an environment variable called `$DOCKERCFG`: `-e DOCKERCFG=$(cat $HOME/.docker/config.json)`
+If your tests depend on private images, you can pass their credentials either by mounting your local `.docker` folder inside the container appending `-v $HOME/.docker:/.docker:ro`, or by providing the contents of the docker configuration file `$HOME/.docker/config.json` via an environment variable called `$DOCKER_CONFIG`. eg `-e DOCKER_CONFIG="$(cat $HOME/.docker/config.json)"`
 
 ## Using the host docker daemon instead of docker-in-docker
 
