@@ -98,7 +98,6 @@ if [ ! -f Dockerfile ]; then
 	echo "FROM tutum/buildstep" >> Dockerfile
 fi
 
-
 #
 # (1/3) Build step
 #
