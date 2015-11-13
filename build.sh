@@ -55,13 +55,13 @@ print_msg "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
 		if [ ! -z "$GIT_ID_RSA" ]; then
-			echo -e "$GIT_ID_RSA" > ~/.ssh/id_builder_git
-			chmod 400 ~/.ssh/id_builder_git
+			echo -e "$GIT_ID_RSA" > ~/.ssh/id_rsa
+			chmod 400 ~/.ssh/id_rsa
 		fi
 		print_msg "   Cloning repo from ${GIT_REPO##*@}"
 		git clone ${GIT_CLONE_OPTS} $GIT_REPO /src
 		if [ ! -z "$GIT_ID_RSA" ]; then
-			rm -f ~/.ssh/id_builder_git
+			rm -f ~/.ssh/id_rsa
 			unset GIT_ID_RSA
 		fi
 		if [ $? -ne 0 ]; then
