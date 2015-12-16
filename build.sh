@@ -170,7 +170,15 @@ if [ ! -z "$IMAGE_NAME" ]; then
 			run_hook push
 		else
 			docker tag -f this $IMAGE_NAME
-			docker push $IMAGE_NAME
+			RETRIES=${RETRIES:-5}
+			for (( i=0 ; ; i++ )); do
+				if [ ${i} -eq ${RETRIES} ]; then
+					echo "Too many retries: failed to push the image ${IMAGE_NAME}"
+					exit 1
+				fi
+				docker push $IMAGE_NAME && break
+				sleep 1
+			done
 			# docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
 			# while cat /tmp/push-result | grep -q "is already in progress"; do
 			#  	 docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
