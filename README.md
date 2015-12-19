@@ -123,4 +123,4 @@ If you want to use the host docker daemon instead of letting the container run i
 
 ## Disable recursive strategy on git clone
 
-In some cases, you may need set up credentials for the initialization github submodules, and it may make `git clone --recursive` fail. In such a case, you can disable the default `--recuresive` strategy by setting `-e GIT_CLONE_OPTS=""` and do `git submodule init & git submodule update` manually in `hooks/post_checkout` or `hooks/pre_build`.
+In some cases, you may need set up credentials for the initialization github submodules, and it may make `git clone --recursive` fail. In such a case, you can disable the default `--recursive` strategy by setting `-e GIT_CLONE_OPTS=""` and do `git submodule init & git submodule update` manually in `hooks/post_checkout` or `hooks/pre_build`.
