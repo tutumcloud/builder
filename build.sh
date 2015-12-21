@@ -209,7 +209,7 @@ cat <<EOF
 Build summary
 =============
 
-$DOCKER_USED
+$DOCKER_USED and docker-compose ${COMPOSE_VERSION}
 $SOURCE
 $BUILD
 $TEST
