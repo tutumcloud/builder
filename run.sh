@@ -56,19 +56,19 @@ if [ -S /var/run/docker.sock ]; then
 	if ! docker version > /dev/null 2>&1 ; then
 		export DOCKER_VERSION=$(cat version_list | grep -P "^$(docker version 2>&1 > /dev/null | grep -iF "client and server don't have same version" | grep -oP 'server: *\d*\.\d*' | grep -oP '\d*\.\d*') .*$" | cut -d " " -f2)
 		if [ "${DOCKER_VERSION}" != "" ]; then
-			print_msg "=> Downloading Docker ${DOCKER_VERSION}"
+			print_msg "=> Downloading docker ${DOCKER_VERSION}"
 			curl -o /usr/bin/docker https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}
 		fi
 	fi
 	docker version > /dev/null 2>&1 || { print_msg "   Failed to connect to docker daemon at /var/run/docker.sock" && exit 1; }
 	EXTERNAL_DOCKER=yes
-	DOCKER_USED="Using external docker version ${DOCKER_VERSION} mounted at /var/run/docker.sock"
+	DOCKER_USED="Using external docker ${DOCKER_VERSION} mounted at /var/run/docker.sock"
     export DOCKER_USED=${DOCKER_USED}
     export EXTERNAL_DOCKER=${EXTERNAL_DOCKER}
     export MOUNTED_DOCKER_FOLDER=${MOUNTED_DOCKER_FOLDER}
     /build.sh "$@"
 else
-	DOCKER_USED="Using docker-in-docker"
+	DOCKER_USED="Using docker-in-docker ${DOCKER_VERSION}"
 	if [ "$(ls -A /var/lib/docker)" ]; then
 		print_msg "=> Detected pre-existing /var/lib/docker folder"
 		MOUNTED_DOCKER_FOLDER=yes

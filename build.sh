@@ -55,11 +55,15 @@ print_msg "=> Detecting application"
 if [ ! -d /app ]; then
 	if [ ! -z "$GIT_REPO" ]; then
 		if [ ! -z "$GIT_ID_RSA" ]; then
-			echo -e "$GIT_ID_RSA" > /root/.ssh/id_rsa
+			echo -e "$GIT_ID_RSA" > ~/.ssh/id_rsa
 			chmod 400 ~/.ssh/id_rsa
 		fi
 		print_msg "   Cloning repo from ${GIT_REPO##*@}"
 		git clone ${GIT_CLONE_OPTS} $GIT_REPO /src
+		if [ ! -z "$GIT_ID_RSA" ]; then
+			rm -f ~/.ssh/id_rsa
+			unset GIT_ID_RSA
+		fi
 		if [ $? -ne 0 ]; then
 			print_msg "   ERROR: Error cloning $GIT_REPO"
 			exit 1
@@ -93,7 +97,6 @@ if [ ! -f Dockerfile ]; then
 	print_msg "   WARNING: no Dockerfile detected! Created one using tutum/buildstep"
 	echo "FROM tutum/buildstep" >> Dockerfile
 fi
-
 
 #
 # (1/3) Build step
@@ -167,7 +170,15 @@ if [ ! -z "$IMAGE_NAME" ]; then
 			run_hook push
 		else
 			docker tag -f this $IMAGE_NAME
-			docker push $IMAGE_NAME
+			RETRIES=${RETRIES:-5}
+			for (( i=0 ; ; i++ )); do
+				if [ ${i} -eq ${RETRIES} ]; then
+					echo "Too many retries: failed to push the image ${IMAGE_NAME}"
+					exit 1
+				fi
+				docker push $IMAGE_NAME && break
+				sleep 1
+			done
 			# docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
 			# while cat /tmp/push-result | grep -q "is already in progress"; do
 			#  	 docker push $IMAGE_NAME 2>&1 | tee /tmp/push-result || true
@@ -198,7 +209,7 @@ cat <<EOF
 Build summary
 =============
 
-$DOCKER_USED
+$DOCKER_USED and docker-compose ${COMPOSE_VERSION}
 $SOURCE
 $BUILD
 $TEST
